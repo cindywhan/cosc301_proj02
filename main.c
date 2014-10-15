@@ -75,6 +75,19 @@ void free_tokens(char **arr){
 	free(arr);
 }
 
+void cut_comments(char **input){
+	// takes in the input and gets rid of any comments
+	int size = sizeof(*input) / sizeof(char);
+	for (int i = 0; i < size; i++){
+		if (*input[i] == '#'){
+		// anything after # is a comment
+			*input[i] = '\0'
+		
+		}
+	}
+
+}
+
 
 int main(int argc, char **argv) {
 	char input[1024]; // array for the input
@@ -88,6 +101,8 @@ int main(int argc, char **argv) {
     	if (strcmp(input, "exit\n") == 0){
     		break;
     	}
+    	// take out comments
+    	cut_comments(&input);
     	// split the input into sections
     	char **commands = split_input(input);
     	int i = 0;
