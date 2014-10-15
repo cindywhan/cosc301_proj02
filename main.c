@@ -33,6 +33,7 @@ char **split_input(char *input, char *sub){
 	char *token = strtok(s_copy, sub);
 	while (token != NULL){
 		char *word = strdup(token);
+		printf("%s\n", word);
 		rv[index] = word;
 		token = strtok(NULL, sub);
 		index++;
@@ -163,7 +164,7 @@ int main(int argc, char **argv) {
     	char *in = cut_comments(input);
 		int next_mode = 0; // default mode (0) is seq and mode (1) is par
     	int current_mode = 0;
-    	char **commands = split_input(in, ";");
+    	char **commands = split_input(in, ";\n");
     	free(in);
     	for (int i = 0; i < sizeof(commands)/sizeof(char *); i++){
     		// check if the command is valid
