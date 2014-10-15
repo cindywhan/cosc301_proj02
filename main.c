@@ -39,31 +39,34 @@ int jobstatus (job *job){
 }
 
 char **split_input(char *input){
-	// this functions spilts the user input for the execv function to use
-	// find out how long to make the return array
-	char *cp = strdup(input);
-	char *tok = strtok(cp, " \t\n");
+	// this functions spilts the user input based on the semicolons in the file
+	// figure out how long to make the return array 
+	char *copy = strdup(input);
+	char *tok = strtok(copy, ";");
 	int count = 1;
 	while (tok != NULL){
-		tok = strtok(NULL, " \t\n");
-		count++;
-	}
-	free(cp);
-	// make the return array
-	char **rv = malloc((count + 1) * sizeof(char *));
-	char *copy = strdup(input);
-	// split the input into sections
-	char *token = strtok(copy, " \t\n");
-	int index = 0;
-	while (token != NULL){
-		rv[index] = strdup(token);
-		token = strtok(NULL, " \t\n");
-		index++;
+		tok = strtok(NULL, ";");
+		count ++;
 	}
 	free(copy);
+	// make the return array
+	char **rv = malloc((count + 1) * sizeof(char *));
+	s
+	for (int i = 0; i < count + 1; i++){
+		rv[i] = NULL;
+	}
+	// break the input up based on the semicolons
+	int index = 0;
+	char *s_copy = strdup(input);
+	char *token = strtok(s_copy, ";");
+	while (token != NULL){
+		char *word = strdup(token);
+		rv[index] = word;
+		token = strtok(NULL, ";");
+		index++;
+	}
+	free(s_copy);
 	return rv;
-	
-
 }
 
 void free_tokens(char **arr){
@@ -81,11 +84,9 @@ void cut_comments(char **input){
 	for (int i = 0; i < size; i++){
 		if (*input[i] == '#'){
 		// anything after # is a comment
-			*input[i] = '\0'
-		
+			*input[i] = '\0'	
 		}
 	}
-
 }
 
 
@@ -105,7 +106,7 @@ int main(int argc, char **argv) {
     	cut_comments(&input);
     	// split the input into sections
     	char **commands = split_input(input);
-    	int i = 0;
+
     	// make a child
     	//pid_t pid = fork();
     	// have the child do the process
