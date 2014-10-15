@@ -65,6 +65,7 @@ char **split_input(char *input, char *sub){
 		token = strtok(NULL, sub);
 		index++;
 	}
+	rv[index] = NULL;
 	free(s_copy);
 	return rv;
 }
@@ -109,9 +110,13 @@ int main(int argc, char **argv) {
     	char **commands = split_input(input, ";");
     	int i = 0;
     	while (command[i] != NULL){
-    		char **cmd = split_input(command[i], " \t\n");
-    		// insert code for the execv function
-    		free_tokens(cmd);
+    		// check if the command is valid
+    		if (sizeof(command[i])/sizeof(char) > 1){
+    			//check what mode to run in
+    			char **cmd = split_input(command[i], " \t\n");
+    			
+    			free_tokens(cmd);
+    		}
     	}
     	// make a child
     	//pid_t pid = fork();
