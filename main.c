@@ -128,7 +128,12 @@ char **format_input(char **in){
 	}
 	options[index] = '\0';
 	// copy options into the format return array
-	rv[1] = strdup(options);
+	if (index == 0){
+		rv[1] = NULL;
+	}
+	else{
+		rv[1] = strdup(options);
+	}
 	rv[2] = NULL;
 	return rv;
 
