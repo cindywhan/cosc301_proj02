@@ -43,6 +43,40 @@ char **split_input(char *input, char *sub){
 
 }
 
+char **format_input(char **in){
+	// format the command for the execv function
+	// format = [command, options, NULL]
+	char **rv = malloc(3 * sizeof(char *));
+	char options[32];
+	memset(options, 0, 32);
+	rv[0] = strdup(in[0]);
+	int i = 1;
+	int index = 0;
+	// collect all the options for the command
+	while(in[i] != NULL){
+		if (in[i][0] == '-'){
+		printf("help\n");
+			for (int n = 0; n < strlen(in[i]); n++){
+				options[index] = in[i][n];
+				index++;
+				printf("hello\n");
+			}
+		}
+	}
+	options[index] = '\0';
+	// copy options into the format return array
+	if (index == 0){
+		rv[1] = NULL;
+	}
+	else{
+		rv[1] = strdup(options);
+	}
+	rv[2] = NULL;
+	return rv;
+
+}
+
+
 
 
 void runseq(char **cmdarr){
@@ -65,8 +99,6 @@ void runseq(char **cmdarr){
 void runpar(char **cmdarr){
 //this function will run through the array of commands, fork for each command, and call the execv() for each process
 //parallel mode
-
-	int childstatus;
 	char lastcmd[128];
 	//go through command tokens, saving any mode changes or exit commands for last
     for (int i = 0; i < sizeof(cmdarr)/sizeof(char*); i++){
@@ -77,27 +109,14 @@ void runpar(char **cmdarr){
     		i++;
     	}
     	
-    	//fork each process as the for loop goes through array of commands, cmdarr
-    	pid_t child = fork();
-    	
-    	if (child < 0){
-    		printf ("Fork failed\n");
-    		break;
-    	}
-    	else if (child == 0){
-    		execv(cmdarr[i], cmdarr);
-    		
-    		//if execv runs properly, error statement below will not print
-    		printf("error");
-    	} 
-    	else{
-    		//need to change to waitpid at some point
-    		wait(&childstatus);
-    		//run the mode change or exit saved from earlier
-    		execv(lastcmd, cmdarr);
-    	}
+    	// use run seq to run the multiple processes
+    	char **cmd = split_input(cmdarr[i], " \t\n");
+    	char **format = format_input(cmd);
+    	free(cmd);
+    	runseq(format);
     }
 }
+
 
 void free_tokens(char **arr){
 	int i = 0;
@@ -108,36 +127,6 @@ void free_tokens(char **arr){
 	free(arr);
 }
 
-char **format_input(char **in){
-	// format the command for the execv function
-	// format = [command, options, NULL]
-	char **rv = malloc(3 * sizeof(char *));
-	char options[32];
-	memset(options, 0, 32);
-	rv[0] = strdup(in[0]);
-	int i = 1;
-	int index = 0;
-	// collect all the options for the command
-	while(in[i] != NULL){
-		if (in[i][0] == '-'){
-			for (int n = 1; n < strlen(in[i]); n++){
-				options[index] = in[i][n];
-				index++;
-			}
-		}
-	}
-	options[index] = '\0';
-	// copy options into the format return array
-	if (index == 0){
-		rv[1] = NULL;
-	}
-	else{
-		rv[1] = strdup(options);
-	}
-	rv[2] = NULL;
-	return rv;
-
-}
 
 char *cut_comments(char *input){
 	// takes in the input and gets rid of any comments
@@ -165,11 +154,15 @@ int main(int argc, char **argv) {
     	printf("prompt>  ");
     	fflush(stdout);
     	fgets(input, 1024, stdin);
-    	
+    	// check if the input is empty
+    	if (input[0] == '\n'){
+    		printf("Please give a valid input.\n");
+    		continue;
+    	}
     	// take out comments
     	char *in = cut_comments(input);
-		int mode = 0; // default mode (0) is seq and mode (1) is par
-    	
+		int next_mode = 0; // default mode (0) is seq and mode (1) is par
+    	int current_mode = 0;
     	char **commands = split_input(in, ";");
     	free(in);
     	for (int i = 0; i < sizeof(commands)/sizeof(char *); i++){
@@ -177,25 +170,26 @@ int main(int argc, char **argv) {
     		char **cmd = split_input(commands[i], " \t\n");
     		char **format = format_input(cmd);
     		free_tokens(cmd);
-    		if (strcmp(format[0],"mode") == 0 || strcmp(format[0],"sequential") ==0 || strcmp(format[0],"parallel") == 0){
+    		if (strcmp(format[0],"mode") == 0){
     			// change the mode 
-    			if (strcmp(format[0], "mode") == 0){
-    				if (strcmp(format[1], "s") == 0){
-    					mode = 0;
+    			if (format[1][0] == 's'){
+    				next_mode = 0;
+    			}
+    			else if (format[1][0] == 'p'){
+    				next_mode = 1;
+    			}
+    			else{
+    				// print the mode if none is given
+    				if (current_mode == 0){
+    					printf("Current mode: Sequential\n");
     				}
-    				else if (strcmp(format[1], "p") == 0){
-    					mode = 1;
+    				else{
+    					printf("Current mode: Parallel\n");
     				}
     			}
-    			else if (strcmp(format[0], "sequential") == 0){
-    				mode = 0;
-    			}
-    			else if (strcmp(format[0], "parallel") == 0){
-    				mode = 1;
-    			}
-    		} 
+    		}
     		else if (format[0] != NULL){
-    			switch(mode){
+    			switch(current_mode){
     			case 1: // run parallel code
     				runpar(commands + i);
     				break;
@@ -203,11 +197,13 @@ int main(int argc, char **argv) {
     				runseq(format);
     				break;
     			}
-    			
     		}
     		free_tokens(format);
-    		}
+    	}
+    	// change mode if needed
+    	current_mode = next_mode;
     	free_tokens(commands);
+    	
     }
 }
 
