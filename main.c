@@ -11,31 +11,14 @@
 #include <poll.h>
 #include <signal.h>
 
-/*
-//create a struct proc for processes
-struct proc{
-	struct proc *next;
-	pid_t pid;
-	char complete; //returns true if process is completed
-};
 
-//create a struct job
-struct job{
-	struct job *next;
-	process *first; //list of processes in the job
-};
-
-*/
-
-//check if this modifies in place
 //modifies string to lowercase in place
-char *modestr(char *str){
-	for (int i = 0; i <= strlen(str); i++){
-		if (str[i]>=65 && str[i]<=90){
-			str[i] = str[i]+32;i
+void to_lower(char (*str)[1024]){
+	for (int i = 0; i <= strlen(*str); i++){
+		if (*str[i]>=65 && *str[i]<=90){
+			*str[i] = *str[i]+32;
 		}
 	}
-	return str;
 }
 
 char **split_input(char *input, char *sub){
@@ -51,7 +34,6 @@ char **split_input(char *input, char *sub){
 	free(copy);
 	// make the return array
 	char **rv = malloc((count + 1) * sizeof(char *));
-	s
 	for (int i = 0; i < count + 1; i++){
 		rv[i] = NULL;
 	}
@@ -71,51 +53,19 @@ char **split_input(char *input, char *sub){
 
 }
 
-/*
-//this function will return true(1) once all processes in the job are completed
-int jobstatus (job *job){
-	process proc;
-	
-	for (proc=job->first; proc; proc=proc->next){
-		if(!proc->complete){
-			return 0;
-		}
-	return 1;
-	}
-}
-*/
 
-//do we need to do this? prompt the user for a mode? 
-int usermode(){
-//this function return true or false about whether a user wants a particular type of mode (sequential or parallel)
-//this function is used to determine the initial mode
 
-	char mode[128];
-	
-	//prompt user for a preferred mode
-	printf("Preferred mode? Sequential or Parallel: \n);
-   fflush(stdout);
-   fgets(mode, 128, stdin);
-   if (strcmp (mode, "parallel") == 0 || strcmp (mode, "mode p") == 0){
-   	return 0;
-   }
-   //if user types otherwise (whether it be "sequential", "mode s", or even something random), default is to run it in sequential mode
-   return 1;
-}
-
-//how to deal with mode changing within line of commands?
-//compare to Sommers' from lab3
-void runseq(char *cmdarr){
+void runseq(char **cmdarr){
 //this function will run through the array of commands, fork for each command, and call the execv() for each process
 //sequential mode
 
   	int childstatus;
   //go through command tokens  
-   for (int i = 0; i < sizeof(cmdarr); cmdarr[i+1]){
+   for (int i = 0; i < sizeof(cmdarr)/sizeof(char*); i++){
     	
 		//if the current command isn't the last one but is the exit command
     	if (strcmp(cmdarr[i], "exit") && i!=sizeof(cmdarr)-1){
-    		;
+    		continue;
     	}
     
     	//fork each process as the for loop goes through array of commands, cmdarr
@@ -127,15 +77,6 @@ void runseq(char *cmdarr){
     	}
     	else if (child == 0){
     		//C: is this necessary? mode p is not a command, it is just the user input, no?
-    		//checks to see if the current command is a mode change
-    		if (strcmp(cmdarr[i],"mode p") == 0 || strcmp(cmdarr[i],"parallel") ==0){
-    		runpar(char *cmdarr);
-    	}
-    		
-    		//am i handling this correctly?
-    		if(strcmp(cmdarr[i], "mode")){
-    			continue;
-    		}
     		
     		//else, run the command
     		execv(cmdarr[i], cmdarr);
@@ -150,20 +91,18 @@ void runseq(char *cmdarr){
     }
 }
 
-void runpar(char *cmdarr){
+void runpar(char **cmdarr){
 //this function will run through the array of commands, fork for each command, and call the execv() for each process
 //parallel mode
 
 	int childstatus;
-	
+	char lastcmd[128];
 	//go through command tokens, saving any mode changes or exit commands for last
-    for (int i = 0; i < sizeof(cmdarr); cmdarr[i+1]){
+    for (int i = 0; i < sizeof(cmdarr)/sizeof(char*); i++){
     	
     	//checks to see if the current command is a mode change or exit, ignores it for now, but saves it for later
-    	//how to deal with multiple mode changes and exit commands? which to execute at the end?
     	if (strcmp(cmdarr[i],"mode s") == 0 || strcmp(cmdarr[i],"mode p") == 0 || strcmp(cmdarr[i],"sequential") ==0 || strcmp(cmdarr[i],"parallel") ==0 || strcmp(cmdarr[i], "mode") == 0 || strcmp(cmdarr[i],"exit") == 0){
-    		char *lastcmd[128];
-    		strncpy(lastcmd, cmdarr[i]);
+    		strcpy(lastcmd, cmdarr[i]);
     		i++;
     	}
     	
@@ -183,7 +122,6 @@ void runpar(char *cmdarr){
     	else{
     		//need to change to waitpid at some point
     		wait(&childstatus);
-    		//do i need to fork here? is this done correctly? after I return from child process, do the last command
     		//run the mode change or exit saved from earlier
     		execv(lastcmd, cmdarr);
     	}
@@ -199,13 +137,13 @@ void free_tokens(char **arr){
 	free(arr);
 }
 
-void cut_comments(char **input){
+void cut_comments(char (*input)[1024]){
 	// takes in the input and gets rid of any comments
 	int size = sizeof(*input) / sizeof(char);
 	for (int i = 0; i < size; i++){
 		if (*input[i] == '#'){
 		// anything after # is a comment
-			*input[i] = '\0'	
+			*input[i] = '\0';	
 		}
 	}
 }
@@ -217,43 +155,50 @@ int main(int argc, char **argv) {
 
     // prompt the user
     while(1) {
-    	printf("Type in a prompt: \n");
-    	//printf ("$ ");
+    	printf("prompt>  ");
     	fflush(stdout);
     	fgets(input, 1024, stdin);
     	
-    	//is this checking just the first node?
-    	// check if the user wants to quit
-    	if (strcmp(input, "exit\n") == 0){
-    		break;
-    	}
+    	to_lower(&input);
     	// take out comments
     	cut_comments(&input);
-    	// split the input into sections
-    	char **commands = split_input(input);
+		int mode = 0; // default mode (0) is seq and mode (1) is par
     	
-    	int mode = usermode();
-    	
-    	//check what mode user wants commands to run in
-    	if (mode == 1){
-    		runseq(input);
-    	}
-    	else if (mode == 0){
-    		runpar(input);
-    	}
-    	
-    	//int i = 0;
     	char **commands = split_input(input, ";");
-    	int i = 0;
-    	while (command[i] != NULL){
+    	for (int i = 0; i < sizeof(commands)/sizeof(char *); i++){
     		// check if the command is valid
-    		if (sizeof(command[i])/sizeof(char) > 1){
-    			//check what mode to run in
-    			char **cmd = split_input(command[i], " \t\n");
+    		char **cmd = split_input(commands[i], " \t\n");
+    		if (strcmp(cmd[0],"mode") == 0 || strcmp(cmd[0],"sequential") ==0 || strcmp(cmd[0],"parallel") == 0){
+    			// change the mode 
+    			if (strcmp(cmd[0], "mode") == 0){
+    				if (strcmp(cmd[1], "s") == 0){
+    					mode = 0;
+    				}
+    				else if (strcmp(cmd[1], "p") == 0){
+    					mode = 1;
+    				}
+    			}
+    			else if (strcmp(cmd[0], "sequential") == 0){
+    				mode = 0;
+    			}
+    			else if (strcmp(cmd[0], "parallel") == 0){
+    				mode = 1;
+    			}
+    		} 
+    		else if (cmd[0] != NULL){
+    			switch(mode){
+    			case 1: // run parallel code
+    				runpar(commands + i);
+    				break;
+    			default:
+    				runseq(cmd);
+    				break;
+    			}
     			
-    			free_tokens(cmd);
     		}
-    	}
+    		free_tokens(cmd);
+    		}
     	free_tokens(commands);
     }
+}
 
