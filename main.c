@@ -118,12 +118,7 @@ int main(int argc, char **argv) {
     			free_tokens(cmd);
     		}
     	}
-    	// make a child
-    	//pid_t pid = fork();
-    	// have the child do the process
-    	
     	free_tokens(commands);
-    
     }
     while(1){
     	prinf ("$ ");
