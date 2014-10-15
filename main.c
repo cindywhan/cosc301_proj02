@@ -216,7 +216,7 @@ int main(int argc, char **argv) {
 	char input[1024]; // array for the input
 
     // prompt the user
-    do {
+    while(1) {
     	printf("Type in a prompt: \n");
     	//printf ("$ ");
     	fflush(stdout);
