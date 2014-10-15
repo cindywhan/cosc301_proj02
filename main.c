@@ -38,14 +38,14 @@ int jobstatus (job *job){
 	}
 }
 
-char **split_input(char *input){
+char **split_input(char *input, char *sub){
 	// this functions spilts the user input based on the semicolons in the file
 	// figure out how long to make the return array 
 	char *copy = strdup(input);
-	char *tok = strtok(copy, ";");
+	char *tok = strtok(copy, sub);
 	int count = 1;
 	while (tok != NULL){
-		tok = strtok(NULL, ";");
+		tok = strtok(NULL, sub);
 		count ++;
 	}
 	free(copy);
@@ -58,11 +58,11 @@ char **split_input(char *input){
 	// break the input up based on the semicolons
 	int index = 0;
 	char *s_copy = strdup(input);
-	char *token = strtok(s_copy, ";");
+	char *token = strtok(s_copy, sub);
 	while (token != NULL){
 		char *word = strdup(token);
 		rv[index] = word;
-		token = strtok(NULL, ";");
+		token = strtok(NULL, sub);
 		index++;
 	}
 	free(s_copy);
@@ -90,6 +90,7 @@ void cut_comments(char **input){
 }
 
 
+
 int main(int argc, char **argv) {
 	char input[1024]; // array for the input
     // prompt the user
@@ -105,8 +106,13 @@ int main(int argc, char **argv) {
     	// take out comments
     	cut_comments(&input);
     	// split the input into sections
-    	char **commands = split_input(input);
-
+    	char **commands = split_input(input, ";");
+    	int i = 0;
+    	while (command[i] != NULL){
+    		char **cmd = split_input(command[i], " \t\n");
+    		// insert code for the execv function
+    		free_tokens(cmd);
+    	}
     	// make a child
     	//pid_t pid = fork();
     	// have the child do the process
