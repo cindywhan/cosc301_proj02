@@ -131,15 +131,14 @@ void free_tokens(char **arr){
 
 char *cut_comments(char *input){
 	// takes in the input and gets rid of any comments
-	char *rv = malloc(sizeof(input));
-	
+	char *rv = malloc(strlen(input) * sizeof(char));
 	for (int i = 0; i < strlen(input); i++){
 		if (input[i] == '#'){
 		// anything after # is a comment
-			rv[i] = '\0';	
+			rv[i] = '\0';
 		}
 		else{
-			rv[i] = tolower(input[i]);
+			rv[i] = input[i];
 		}
 	}
 	return rv;
@@ -159,6 +158,9 @@ int main(int argc, char **argv) {
     	if (input[0] == '\n'){
     		printf("Please give a valid input.\n");
     		continue;
+    	}
+    	if (strcmp(input, "exit") == 0){
+    		break;
     	}
     	// take out comments
     	char *in = cut_comments(input);
