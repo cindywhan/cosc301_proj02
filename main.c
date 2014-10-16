@@ -175,11 +175,13 @@ int main(int argc, char **argv) {
     		free_tokens(cmd);
     		if (strcmp(format[0],"mode") == 0){
     			// change the mode 
-    			if (format[1][0] == 's'){
-    				next_mode = 0;
-    			}
-    			else if (format[1][0] == 'p'){
-    				next_mode = 1;
+    			if (sizeof(format)/sizeof(char *) > 1){
+    				if (format[1][0] == 's'){
+    					next_mode = 0;
+    				}
+    				else if (format[1][0] == 'p'){
+    					next_mode = 1;
+    				}
     			}
     			else{
     				// print the mode if none is given
@@ -192,12 +194,11 @@ int main(int argc, char **argv) {
     			}
     		}
     		else if (format[0] != NULL){
-    			switch(current_mode){
-    			case 1: // run parallel code
-    				runpar(commands + i);
-    				break;
-    			default:
+    			if (mode == 0){// run parallel code
     				runseq(format);
+    			}
+    			else{
+    				runpar(commands + i);
     				break;
     			}
     		}
