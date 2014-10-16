@@ -38,32 +38,51 @@ char *modestr(char *str){
 	return str;
 }
 
+<<<<<<< HEAD
 
 char **split_input(char *input){
 	// this functions spilts the user input for the execv function to use
 	// find out how long to make the return array
 	char *cp = strdup(input);
 	char *tok = strtok(cp, " \t\n");
+=======
+char **split_input(char *input, char *sub){
+	// this functions spilts the user input based on the semicolons in the file
+	// figure out how long to make the return array 
+	char *copy = strdup(input);
+	char *tok = strtok(copy, sub);
+>>>>>>> 5c7c8b6ab38c069aaa3d8719958448b13cd49a95
 	int count = 1;
 	while (tok != NULL){
-		tok = strtok(NULL, " \t\n");
-		count++;
+		tok = strtok(NULL, sub);
+		count ++;
 	}
+<<<<<<< HEAD
 	free(cp);
 	
+=======
+	free(copy);
+>>>>>>> 5c7c8b6ab38c069aaa3d8719958448b13cd49a95
 	// make the return array
 	char **rv = malloc((count + 1) * sizeof(char *));
-	char *copy = strdup(input);
-	// split the input into sections
-	char *token = strtok(copy, " \t\n");
+	s
+	for (int i = 0; i < count + 1; i++){
+		rv[i] = NULL;
+	}
+	// break the input up based on the semicolons
 	int index = 0;
+	char *s_copy = strdup(input);
+	char *token = strtok(s_copy, sub);
 	while (token != NULL){
-		rv[index] = strdup(token);
-		token = strtok(NULL, " \t\n");
+		char *word = strdup(token);
+		rv[index] = word;
+		token = strtok(NULL, sub);
 		index++;
 	}
-	free(copy);
+	rv[index] = NULL;
+	free(s_copy);
 	return rv;
+<<<<<<< HEAD
 
 }
 
@@ -184,6 +203,8 @@ void runpar(char *cmdarr){
     		execv(lastcmd, cmdarr);
     	}
     }
+=======
+>>>>>>> 5c7c8b6ab38c069aaa3d8719958448b13cd49a95
 }
 
 void free_tokens(char **arr){
@@ -194,6 +215,18 @@ void free_tokens(char **arr){
 	}
 	free(arr);
 }
+
+void cut_comments(char **input){
+	// takes in the input and gets rid of any comments
+	int size = sizeof(*input) / sizeof(char);
+	for (int i = 0; i < size; i++){
+		if (*input[i] == '#'){
+		// anything after # is a comment
+			*input[i] = '\0'	
+		}
+	}
+}
+
 
 
 int main(int argc, char **argv) {
@@ -211,7 +244,10 @@ int main(int argc, char **argv) {
     	if (strcmp(input, "exit\n") == 0){
     		break;
     	}
+    	// take out comments
+    	cut_comments(&input);
     	// split the input into sections
+<<<<<<< HEAD
     	char **commands = split_input(input);
     	
     	int mode = usermode();
@@ -225,6 +261,19 @@ int main(int argc, char **argv) {
     	}
     	
     	//int i = 0;
+=======
+    	char **commands = split_input(input, ";");
+    	int i = 0;
+    	while (command[i] != NULL){
+    		// check if the command is valid
+    		if (sizeof(command[i])/sizeof(char) > 1){
+    			//check what mode to run in
+    			char **cmd = split_input(command[i], " \t\n");
+    			
+    			free_tokens(cmd);
+    		}
+    	}
+>>>>>>> 5c7c8b6ab38c069aaa3d8719958448b13cd49a95
     	// make a child
     	//pid_t pid = fork();
     	// have the child do the process
