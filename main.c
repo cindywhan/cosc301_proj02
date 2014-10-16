@@ -11,6 +11,14 @@
 #include <poll.h>
 #include <signal.h>
 
+
+/*
+Cindy : wrote the parsing and the user input part of the function
+Catherine: wrote the forking and execv part
+
+
+*/
+
 char **split_input(char *input, char *sub){
 	// this functions spilts the user input based on the semicolons in the file
 	// figure out how long to make the return array 
@@ -33,7 +41,6 @@ char **split_input(char *input, char *sub){
 	char *token = strtok(s_copy, sub);
 	while (token != NULL){
 		char *word = strdup(token);
-		printf("%s\n", word);
 		rv[index] = word;
 		token = strtok(NULL, sub);
 		index++;
@@ -41,7 +48,6 @@ char **split_input(char *input, char *sub){
 	rv[index] = NULL;
 	free(s_copy);
 	return rv;
-
 }
 
 char **format_input(char **in){
@@ -56,13 +62,10 @@ char **format_input(char **in){
 	// collect all the options for the command
 	while(in[i] != NULL){
 		if (in[i][0] == '-'){
-		printf("help\n");
-			for (int n = 0; n < strlen(in[i]); n++){
-				options[index] = in[i][n];
-				index++;
-				printf("hello\n");
-			}
+			options[index] = in[i][1];
+			index++;
 		}
+		i++;
 	}
 	options[index] = '\0';
 	// copy options into the format return array
@@ -159,7 +162,7 @@ int main(int argc, char **argv) {
     		printf("Please give a valid input.\n");
     		continue;
     	}
-    	if (strcmp(input, "exit") == 0){
+    	if (strcmp(input, "exit\n") == 0){
     		break;
     	}
     	// take out comments
@@ -168,7 +171,8 @@ int main(int argc, char **argv) {
     	int current_mode = 0;
     	char **commands = split_input(in, ";\n");
     	free(in);
-    	for (int i = 0; i < sizeof(commands)/sizeof(char *); i++){
+    	int i = 0;
+    	while (commands[i] != NULL){
     		// check if the command is valid
     		char **cmd = split_input(commands[i], " \t\n");
     		char **format = format_input(cmd);
@@ -194,7 +198,7 @@ int main(int argc, char **argv) {
     			}
     		}
     		else if (format[0] != NULL){
-    			if (mode == 0){// run parallel code
+    			if (current_mode == 0){// run parallel code
     				runseq(format);
     			}
     			else{
@@ -203,6 +207,7 @@ int main(int argc, char **argv) {
     			}
     		}
     		free_tokens(format);
+    		i++;
     	}
     	// change mode if needed
     	current_mode = next_mode;
