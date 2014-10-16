@@ -100,17 +100,20 @@ void runseq(char **cmdarr){
     wait(&child);
 }
 
-void runpar(char **cmdarr){
+int runpar(char **cmdarr){
 //this function will run through the array of commands, fork for each command, and call the execv() for each process
 //parallel mode
-	char lastcmd[128];
+	found_exit = 0;
+	mode_change = 0;
 	//go through command tokens, saving any mode changes or exit commands for last
     for (int i = 0; i < sizeof(cmdarr)/sizeof(char*); i++){
     	
     	//checks to see if the current command is a mode change or exit, ignores it for now, but saves it for later
-    	if (strcmp(cmdarr[i],"mode s") == 0 || strcmp(cmdarr[i],"mode p") == 0 || strcmp(cmdarr[i],"sequential") ==0 || strcmp(cmdarr[i],"parallel") ==0 || strcmp(cmdarr[i], "mode") == 0 || strcmp(cmdarr[i],"exit") == 0){
-    		strcpy(lastcmd, cmdarr[i]);
-    		i++;
+    	if (strcmp(cmdarr[i],"mode s") == 0 || strcmp(cmdarr[i],"mode p") == 0){
+    		mode_change = 1;
+    	}
+    	if (strcmp(cmdarr[i],"exit") == 0){
+    		found_exit = 0;
     	}
     	
     	// use run seq to run the multiple processes
@@ -119,6 +122,10 @@ void runpar(char **cmdarr){
     	free(cmd);
     	runseq(format);
     }
+    if (found_exit){
+    	exit();
+    }
+    return mode_change;
 }
 
 
@@ -202,7 +209,8 @@ int main(int argc, char **argv) {
     				runseq(format);
     			}
     			else{
-    				runpar(commands + i);
+    				curent_mode = runpar(commands + i);
+    				new_mode = current_mode;
     				break;
     			}
     		}
